@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consensus Blockchain Wallet Simulator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="glass-bg"></div>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-logo">
+                <div class="logo-icon">🗳️</div>
+                <div>
+                    <h1>Consensus Wallet Graph Simulator</h1>
+                    <p class="subtitle">University Blockchain Consensus Voting & Synchronization Demo</p>
+                </div>
+            </div>
+            <div class="network-summary">
+                <div class="searchable-dropdown-container">
+                    <label>Select Wallet:</label>
+                    <div class="searchable-dropdown" id="user-search-dropdown">
+                        <div class="dropdown-trigger" id="user-dropdown-trigger">
+                            <span id="selected-user-display">Select Wallet...</span>
+                            <span class="dropdown-arrow">▼</span>
+                        </div>
+                        <div class="dropdown-menu" id="user-dropdown-menu">
+                            <input type="text" id="user-search-input" placeholder="Search Wallet..." autocomplete="off">
+                            <div class="dropdown-options" id="user-dropdown-options">
+                                <!-- Dynamic options -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button id="reset-network-btn" class="btn btn-danger btn-small">🗑️ Reset Network</button>
+            </div>
+        </header>
+
+        <!-- Clients Status Bar -->
+        <div class="clients-status-bar" id="clients-status-bar">
+            <!-- Dynamic client health and heights -->
+        </div>
+
+        <!-- Main Workspace -->
+        <main class="app-main">
+            <!-- Left Panel: Wallet Graph -->
+            <section class="card panel-graph">
+                <div class="card-header">
+                    <h2>Wallet Interaction Graph</h2>
+                    <span class="badge">Interactive Nodes</span>
+                </div>
+                <div class="card-body canvas-container">
+                    <canvas id="graph-canvas"></canvas>
+                    <div class="zoom-controls">
+                        <button id="zoom-in-btn" title="Zoom In">➕</button>
+                        <button id="zoom-out-btn" title="Zoom Out">➖</button>
+                        <button id="zoom-reset-btn" title="Reset View">🏠</button>
+                    </div>
+                    <div class="network-tip">
+                        Drag canvas to pan. Scroll to zoom. Click node to select. Register wallets in details panel.
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Panel: Controls & Consensus -->
+            <section class="panel-details">
+                <!-- Selected Wallet panel -->
+                <div class="card detail-card" id="wallet-panel">
+                    <div class="card-header">
+                        <h2 id="wallet-panel-title">Select a Wallet</h2>
+                        <span class="badge purple" id="wallet-panel-addr">-</span>
+                    </div>
+                    <div class="card-body">
+                        <!-- Register Wallet Form (Always Visible) -->
+                        <div class="register-wallet-container" style="margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 20px;">
+                            <h3 style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">👤 Register New Wallet</h3>
+                            <form id="register-wallet-form" class="form-inline" style="margin-top: 8px;">
+                                <div class="form-inline-row">
+                                    <input type="text" id="register-wallet-name" placeholder="Wallet Name (e.g. Eve)" required autocomplete="off" style="width: 100%; background: rgba(0,0,0,0.25); border: 1px solid var(--border-color); color: var(--text-primary); padding: 10px 14px; border-radius: var(--radius-sm); font-family: var(--font-body); font-size: 0.85rem;">
+                                    <button type="submit" class="btn btn-primary">Register</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="wallet-balance-row">
+                            <span class="balance-label">Current Balance:</span>
+                            <span class="balance-value" id="wallet-balance-val">0.00 Coins</span>
+                        </div>
+                        
+                        <div class="actions-container" id="wallet-actions" style="display:none;">
+                            <!-- Spawn Coins Form -->
+                            <form id="spawn-coins-form" class="form-inline">
+                                <h3>🪙 Spawn (Mint) Coins</h3>
+                                <div class="form-inline-row">
+                                    <input type="number" id="spawn-amount" min="1" max="100000" value="100" required>
+                                    <button type="submit" class="btn btn-primary">Spawn</button>
+                                </div>
+                            </form>
+                            
+                            <!-- Send Coins Form -->
+                            <form id="send-coins-form">
+                                <h3>💸 Send Coins (Requires 50%+1 Consensus)</h3>
+                                <div class="form-group">
+                                    <label for="send-recipient">Recipient</label>
+                                    <select id="send-recipient" required>
+                                        <!-- Other wallets -->
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="send-amount">Amount</label>
+                                    <input type="number" id="send-amount" min="1" max="100000" value="10" required>
+                                </div>
+                                <button type="submit" class="btn btn-warning btn-block">🚀 Submit Transaction</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Consensus Voting Indicator -->
+                <div class="card consensus-card" id="consensus-panel">
+                    <div class="card-header">
+                        <h2>Consensus Voting Status</h2>
+                        <span class="badge" id="consensus-result-badge">-</span>
+                    </div>
+                    <div class="card-body">
+                        <p class="voting-desc" id="voting-desc">Submit a transaction to observe consensus voting in real-time.</p>
+                        <div class="voting-list" id="voting-list">
+                            <!-- Client vote list -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Network Delay Settings -->
+                <div class="card network-card" id="network-delay-panel">
+                    <div class="card-header">
+                        <h2>Simulated Network Delay</h2>
+                        <span class="badge">Latency Control</span>
+                    </div>
+                    <div class="card-body">
+                        <p class="voting-desc">Simulate network latency (delays) on individual clients to observe slow consensus response times.</p>
+                        <div class="delay-controls-list">
+                            <div class="delay-row" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+                                <span style="font-size:0.85rem; font-weight:600; color:var(--text-muted);">Client 1 (Port 5001):</span>
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <input type="range" class="delay-slider" data-client-id="1" data-port="5001" min="0" max="2000" step="100" value="0" style="width:120px; cursor:pointer;">
+                                    <span class="delay-display" id="delay-val-1" style="font-family:var(--font-mono); font-size:0.8rem; min-width:48px; text-align:right;">0ms</span>
+                                </div>
+                            </div>
+                            <div class="delay-row" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+                                <span style="font-size:0.85rem; font-weight:600; color:var(--text-muted);">Client 2 (Port 5002):</span>
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <input type="range" class="delay-slider" data-client-id="2" data-port="5002" min="0" max="2000" step="100" value="0" style="width:120px; cursor:pointer;">
+                                    <span class="delay-display" id="delay-val-2" style="font-family:var(--font-mono); font-size:0.8rem; min-width:48px; text-align:right;">0ms</span>
+                                </div>
+                            </div>
+                            <div class="delay-row" style="display:flex; align-items:center; justify-content:space-between;">
+                                <span style="font-size:0.85rem; font-weight:600; color:var(--text-muted);">Client 3 (Port 5003):</span>
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <input type="range" class="delay-slider" data-client-id="3" data-port="5003" min="0" max="2000" step="100" value="0" style="width:120px; cursor:pointer;">
+                                    <span class="delay-display" id="delay-val-3" style="font-family:var(--font-mono); font-size:0.8rem; min-width:48px; text-align:right;">0ms</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Blockchain Ledger -->
+        <section class="card panel-ledger">
+            <div class="card-header">
+                <h2>Blockchain Database Ledger</h2>
+                <span class="badge purple" id="ledger-height-badge">0 blocks</span>
+            </div>
+            <div class="card-body">
+                <div class="ledger-container" id="ledger-list">
+                    <!-- Blocks list -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Toast Notifications -->
+        <div class="toast-container" id="toast-container"></div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
